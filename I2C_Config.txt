@@ -1,0 +1,72 @@
+/*
+ * File:   I2C.c
+ * Author: sebas
+ *
+ * Created on 15 de junio de 2026, 08:49 PM
+ */
+
+
+#include <xc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#pragma config WDT = OFF
+//#pragma config FOSC=INTOSC_EC
+#pragma config PWRT = ON
+#pragma config BOR = OFF
+#pragma config LVP = OFF
+#pragma config PBADEN = OFF
+//#pragma config MCLRE = ON
+#pragma config XINST = OFF
+#pragma config DEBUG = OFF
+#define _XTAL_FREQ 8000000L
+
+void Config(void);
+
+void main(void) {
+    
+    Config();
+    
+    return;
+}
+
+void Config(){
+    
+    TRISBbits.RB0=1; //Serial Clock (SCL)
+    TRISBbits.RB1=1; //Serial Data  (SDA)
+    
+    //SSPSTAT => Status Register
+    SSPSTATbits.SMP = 1; // Bit(7) Standard Speed (100kHz)  
+    SSPSTATbits.CKE = 0; // Bit(6) SMBus = Variante al standard de Intel.
+    SSPSTATbits.DA;      // Bit(5) No se usa en Master Mode
+    SSPSTATbits.P   = 0; // Bit(4) Indicador de Stop Bit
+    SSPSTATbits.S   = 0; // Bit(3) Indicador de Start Bit
+    SSPSTATbits.RW  = 0; // Bit(2) Transmicion en proceso
+    SSPSTATbits.UA  = 1; // Bit(1) Direccion nesecita ser actualizada en SSPADD
+    SSPSTATbits.BF  = 0; // Bit(0) Trasmicion => SSPBUF (1=Lleno,0=Vacio)
+    
+    //SSPCON1 = Control Register
+    SSPCON1bits.WCOL  = 0; // Bit(7) Write Collision,No se necesita cuando hay un solo Maestro
+    SSPCON1bits.SSPOV;     // Bit(6) Sobrecarga de Recepcion(No importa en Master Mode)
+    SSPCON1bits.SSPEN = 1; // Bit(5) Habilita Los pines RB0 y RB1 como SCL y SDA
+    SSPCON1bits.CKP;       // Bit(4) Clock Stretching, No se utilza en Master Mode
+    
+    SSPCON1bits.SSPM3 = 1; // Bit(3)  //
+    SSPCON1bits.SSPM2 = 0; // Bit(2)  ///
+                                         //>> Modo Maestro
+    SSPCON1bits.SSPM1 = 0; // Bit(1)  ///
+    SSPCON1bits.SSPM0 = 0; // Bit(0)  //
+    
+    //SSPCON2 = Control Register (Master Mode)(Tambien hay version Slave Mode)
+    SSPCON2bits.GCEN    = 0;  // General Call Enable (No se necesita en Master Mode)
+    SSPCON2bits.ACKSTAT = 1;  // Ack Status Bit (1=No,0=Si) Reception (Master TX Only)
+    SSPCON2bits.ACKDT   = 1;  // Ack Data Bit (1=No,0=Si) Reception (Master Rx Only)
+    SSPCON2bits.ACKEN   = 0;  // Ack Sequence Bit(1=Si,0=No)
+    SSPCON2bits.RCEN    = 0;  // Receive Enable Bit(Master Only)
+    SSPCON2bits.PEN     = 0;  // Stop Condition Enable Bit
+    SSPCON2bits.RSEN    = 0;  // Repeated Start Condition Enable Bit
+    SSPCON2bits.SEN     = 0;  // Start Condition Enable/Stretch Enable Bit
+    
+    SSPADD = 19;
+}
