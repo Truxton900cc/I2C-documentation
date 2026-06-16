@@ -69,4 +69,24 @@ void Config(){
     SSPCON2bits.SEN     = 0;  // Start Condition Enable/Stretch Enable Bit
     
     SSPADD = 19;
+    SSPBUF = 0b01110000;
+    
+
+    //INTERRUPCIONES
+
+    INTCONbits.GIE  = 1; // Global Interrupt Enable bit
+    INTCONbits.PEIE = 1; // Peripheral Interrupt Enable bit
+
+    PIR1bits.SPPIF = 0; // Streaming Parallel Port (1 = R/W )(0 = No R/W has Ocurred)
+    PIR1bits.SSPIF = 0; // Master Synchronous Serial Port (1 = Tx/Rx Complete) (0 = Waiting)
+
+    PIE1bits.SPPIE = 1; // Enables Streaming Parallel Port
+    PIE1bits.SSPIE = 1; // Master Synchronous Serial Port 
+
+    IPR1bits.SPPIP = 1; // Streaming Parallel R/W Priority
+
+    RCONbits.IPEN = 1; // Enable priority levels on interrupts
+
+    
+    
 }
