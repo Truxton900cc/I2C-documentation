@@ -1,4 +1,4 @@
-/*
+`/*
  * File:   I2C.c
  * Author: sebas
  *
@@ -27,7 +27,42 @@ void Config(void);
 void main(void) {
     
     Config();
+
+    //Colocar en 1, SSPCON2bits.SEN 
+    //SSPIF en 1, el modulo espera hasta que este listo para empezar, el tiempo que considere necesario
+    //Cargar SSPBUF con el Slave address
+    //Se Transmite los 8-Bits de Direccion
+    //Recive un bit Ack del esclavo, SSPCON2bits.ACKSTAT pasa de '1' -> '0'
+    //Al noveno ciclo de reloj se genera una interrupcion del SSPIF pasa de '0' -> '1'
+    //Cargar SSPBUF con 8-Bits de Datos
+    //Se Transmite los 8-Bits de Datos
+    //Recive un bit Ack del esclavo, SSPCON2bits.ACKSTAT pasa de '1' -> '0'
+    //Al noveno ciclo de reloj se genera una interrupcion del SSPIF pasa de '0' -> '1'
+    //Colocar en 1, SSPCON2bits.PEN
+    //Se genera una interrupcion una vez la Stop Condition is complete.
+
+    SSPCON2bits.SEN = 1;
     
+    while(SSPIF==1){
+    }
+    
+    SSPBUF = 0b01110000; // Direccion Esclavo
+
+    while(SSPCON2bits.ACKSTAT==1){
+    }
+    
+    while(PIR1bits.SSPIF==1){
+    }
+
+    SSPBUF = 0b11110000; // Datos
+
+    while(SSPCON2bits.ACKSTAT==1){
+    }
+    while(PIR1bits.SSPIF==1){
+    }
+
+    SSPCON2bits.PEN = 1;
+
     return;
 }
 
@@ -69,8 +104,8 @@ void Config(){
     SSPCON2bits.SEN     = 0;  // Start Condition Enable/Stretch Enable Bit
     
     SSPADD = 19;
-    SSPBUF = 0b01110000;
-    
+    //SSPBUF = 0b01110000;
+    SSPBUF = 0;
 
     //INTERRUPCIONES
 
@@ -87,6 +122,6 @@ void Config(){
 
     RCONbits.IPEN = 1; // Enable priority levels on interrupts
 
-    
+
     
 }
