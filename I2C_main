@@ -35,12 +35,12 @@ void Config_UART(void);
 void LCD_Init(void);
 void LCD_Cmd(uint8_t cmd);
 void LCD_Char(char data);
-void I2C_Write_Byte(void);
+void I2C_Write_Byte(uint8_t data);
 
 uint8_t Address = 0x4E;
 int direccion = 0;
-
-uint8_t direcciones[] = {0x40,0x42,0x44,0x46,0x48,0x4A,0x4C,0x4E};
+int ack = 0;
+uint8_t direcciones[] = {0x40,0x42,0x44,0x4E,0x48,0x4A,0x4C,0x46};
 
 void main(void) {
     
@@ -77,10 +77,27 @@ void main(void) {
         LCD_Char(nombre[i]);
     }*/
     
+    
+    
     while(1){
              
-        I2C_Write_Byte();
-        __delay_ms(50);
+        //I2C_Write_Byte();
+        //__delay_ms(50);
+        if(ack==0){
+
+            do{
+                LCD_Init();
+            }while(ack==0);
+           
+        }
+
+            
+            Led = !Led;
+            __delay_ms(500);
+            Led = !Led;
+            __delay_ms(500);
+            LCD_Char('A');
+            
     }
     
 }
@@ -145,7 +162,7 @@ void Config(){
 
     RCONbits.IPEN = 0; // Enable priority levels on interrupts
 }
-void I2C_Write_Byte() {
+void I2C_Write_Byte(uint8_t data) {
     // 1. Condición de Start
     PIR1bits.SSPIF = 0;          
     SSPCON2bits.SEN = 1;
@@ -154,13 +171,30 @@ void I2C_Write_Byte() {
     // 2. Dirección del Esclavo
     PIR1bits.SSPIF = 0;          
     //SSPBUF = direcciones[direccion];      
-    SSPBUF = Address;
+    SSPBUF = 0x4E;
     while(PIR1bits.SSPIF == 0);
     
-    if(SSPCON2bits.ACKSTAT == 0)
+    if(SSPCON2bits.ACKSTAT == 0){
+        ack=1;
+    }
+    
+    /*if(SSPCON2bits.ACKSTAT == 0)
     {
     // ¡El backpack respondió!
         Led = 1;
+        
+        for(int a = 0;a<=direccion;a++)
+        {
+            Led = !Led;
+            __delay_ms(500);
+            Led = !Led;
+            __delay_ms(500);
+        }
+        __delay_ms(500);
+        __delay_ms(500);
+        __delay_ms(500);
+        __delay_ms(500);
+        __delay_ms(500);
     }
     else
     {
@@ -170,12 +204,14 @@ void I2C_Write_Byte() {
         else{
             direccion = 0;
         }
-    }
+    }*/
     
     // 3. Enviar el byte de datos al PCF8574
+
     PIR1bits.SSPIF = 0;          
-    SSPBUF = 'A';         
+    SSPBUF = data;         
     while(PIR1bits.SSPIF == 0);
+    
     
     // 4. Condición de Stop
     PIR1bits.SSPIF = 0;          
@@ -189,7 +225,7 @@ void I2C_Write_Byte() {
 
 
 // Inicialización estándar del LCD Hitachi HD44780 por I2C
-/*void LCD_Init(void) {
+void LCD_Init(void) {
     // Secuencia de inicialización para modo 4 bits
     __delay_ms(15);
     LCD_Cmd(0x03);
@@ -243,4 +279,4 @@ void LCD_Char(char data) {
     I2C_Write_Byte(baja | BACKLIGHT | 0x01); // EN = 0, RS = 1
     
     __delay_us(50);
-}*/
+}
